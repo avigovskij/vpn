@@ -1,0 +1,29 @@
+- name: Initialize PKI
+  ansible.builtin.command: "$EASYRSA/easyrsa init-pki"
+  register: init_pki_output
+  changed_when: init_pki_output.rc == 0
+  environment:
+    # Environment variable should point to the Easy-RSA top-level dir, where the easyrsa script is located
+    EASYRSA: "{{ rsa_home }}"
+    # init-pki command asks user for agreement to execute init hence it's require to
+    # send "yes" using echo yes | or set environment variable.
+    # See more about easy-rsa environment: (https://easy-rsa.readthedocs.io/en/latest/advanced/#environmental-variables-reference)
+    EASYRSA_BATCH: "yes"
+
+- name: Define PKI path
+  block:
+    - name: Call module manage_pki to get information about pki
+      manage_pki:
+        rsa_home: "{{ rsa_home }}"
+        state: info
+      register: manage_pki_result
+
+    - name: Set fact about rsa_home
+      set_fact:
+        pki_home: "{{ manage_pki_result.result['PKI'] }}"
+
+- name: Push vars file to easy-rsa directory if pkivars_file presented
+  ansible.builtin.copy:
+    src: custom_pki_vars
+    dest: "{{ pki_home }}/vars"
+    mode: "640"

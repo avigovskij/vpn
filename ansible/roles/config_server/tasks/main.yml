@@ -1,0 +1,58 @@
+---
+- name: Install epel-release-latest
+  ansible.builtin.yum:
+    name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+    state: present
+    disable_gpg_check: true
+
+- name: Install epel-release-next support
+  ansible.builtin.yum:
+    name: "https://dl.fedoraproject.org/pub/epel/epel-next-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+    state: present
+    disable_gpg_check: true
+
+- name: Install openvpn package
+  ansible.builtin.yum:
+    name:
+      - openvpn
+
+- name: Push CA certificate
+  ansible.builtin.copy:
+    src: "{{ fetch_certs_path }}/ca.crt"
+    dest: "{{ ca_target_cert_path }}"
+
+- name: Push server certificate
+  ansible.builtin.copy:
+    src: "{{ fetch_certs_path }}/server.crt"
+    dest: "{{ server_target_cert_path }}"
+
+- name: Generate params file for Diffie–Hellman protocol
+  ansible.builtin.shell: |
+    openssl dhparam -out /etc/openvpn/server/dh2048.pem 2048
+  changed_when: true
+  when: recreate_dh_file
+
+- name: Copy server configuration to server
+  ansible.builtin.template:
+    src: openvpn.conf.j2
+    dest: /etc/openvpn/server/server.conf
+    mode: "644"
+
+- name: Create HMAC key
+  ansible.builtin.shell: |
+    openvpn --genkey --secret /etc/openvpn/server/ta.key
+  changed_when: true
+
+- name: Fetch HMAC key
+  ansible.builtin.fetch:
+    src: /etc/openvpn/server/ta.key
+    flat: true
+    dest: "{{ fetch_private_files }}/"
+
+- name: Start openvpn server with config as daemon
+  ansible.builtin.systemd_service:
+    name: openvpn-server@server.service
+    enabled: true
+    state: restarted
+
+- name: Add rule

@@ -1,0 +1,20 @@
+---
+- name: Create user
+  ansible.builtin.user:
+    create_home: true
+    name: "{{ username }}"
+    password: "{{ password | password_hash('sha512') }}"
+    state: present
+
+- name: Copy ssh key from jump host to target
+  ansible.posix.authorized_key:
+    user: "{{ username }}"
+    key: "{{ lookup('file', ssh_public_key) }}"
+    state: present
+
+- name: Grant sudo privilleges to user
+  community.general.sudoers:
+    state: present
+    commands: "{{ allowed_commands }}"
+    user: "{{ username }}"
+    name: "{{ username }}"

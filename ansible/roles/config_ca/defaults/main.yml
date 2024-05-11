@@ -1,0 +1,7 @@
+easy_rsa_origin_home: /usr/share/easy-rsa/3
+
+# Directory where easy-rsa directory will be moved
+easy_rsa_home: /infrahub_pki
+
+# Path to local templates with custom pki vars (easyrsa init-pki generates if it's not present)
+pki_vars_file: custom_pki_vars

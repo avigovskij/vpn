@@ -1,0 +1,23 @@
+---
+- name: Initialize PKI
+  ansible.builtin.include_role:
+    name: pki_init
+  vars:
+    rsa_home: "{{ ca_rsa_home }}"
+
+# As output of it's task execution there is new templates:
+# $EASYRSA/pki/ca.crt - file with content of public certificate
+# $EASYRSA/pki/private/ca.key - file with content of private key which is used to sign certificates
+- name: Build CA
+  ansible.builtin.command: "$EASYRSA/easyrsa build-ca nopass"
+  changed_when: true
+  environment:
+    EASYRSA: "{{ ca_rsa_home }}"
+    # build-ca asks user for Common Name that will be incorporated into certificate request
+    EASYRSA_BATCH: infrahub.com
+
+- name: Fetch CA certificate to local machine
+  ansible.builtin.fetch:
+    src: "{{ pki_home }}/ca.crt"
+    dest: "{{ fetch_certs_path }}/"
+    flat: yes

@@ -1,0 +1,2 @@
+easy_rsa_home: /server_easy_rsa
+pki_home: /server_easy_rsa/pki

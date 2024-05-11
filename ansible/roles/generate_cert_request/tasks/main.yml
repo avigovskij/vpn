@@ -1,0 +1,13 @@
+---
+- name: Generate sign request
+  manage_pki:
+    name: "{{ node_name }}"
+    rsa_home: "{{ rsa_home }}"
+    state: request
+  register: request_generation_result
+
+- name: Fetch generated certificate request
+  ansible.builtin.fetch:
+    src: "{{ request_generation_result.result.request }}"
+    dest: "{{ fetch_requests }}/{{ node_name }}.req"
+    flat: yes

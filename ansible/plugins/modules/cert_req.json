@@ -1,0 +1,6 @@
+{
+  "ANSIBLE_MODULE_ARGS": {
+    "name": "test_client",
+    "rsa_home": "/opt/homebrew/bin/"
+  }
+}

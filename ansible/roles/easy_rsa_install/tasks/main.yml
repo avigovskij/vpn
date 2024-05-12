@@ -1,0 +1,25 @@
+---
+- name: Install epel-release-latest
+  ansible.builtin.yum:
+    name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+    state: present
+    disable_gpg_check: true
+
+- name: Install epel-release-next support
+  ansible.builtin.yum:
+    name: "https://dl.fedoraproject.org/pub/epel/epel-next-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+    state: present
+    disable_gpg_check: true
+
+- name: Install easy-rsa components
+  ansible.builtin.yum:
+    name:
+      - easy-rsa
+    state: present
+
+- name: Copy easy-rsa folder content to isolated directory
+  ansible.builtin.copy:
+    remote_src: true
+    mode: "660"
+    src: "{{ easy_rsa_origin_home }}/"
+    dest: "{{ easy_rsa_target_home }}/"

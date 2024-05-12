@@ -1,0 +1,13 @@
+easy_rsa_home: /server_easy_rsa
+recreate_dh_file: true
+
+opnevpn_port: 1194
+
+ca_local_cert_path: "/tmp/certs/ca.crt"
+server_local_cert_path: "/tmp/certs/server.crt"
+
+ca_target_cert_path: /etc/openvpn/server/ca.crt
+server_target_cert_path: /etc/openvpn/server/server.crt
+
+ta_key_path: /etc/openvpn/server/ta.key
+dh_path: /etc/openvpn/server/dh2048.pem

@@ -1,0 +1,53 @@
+---
+- name: Define PKI path
+  block:
+    - name: Call module manage_pki to get information about pki
+      manage_pki:
+        rsa_home: "{{ rsa_home }}"
+        state: info
+      register: manage_pki_result
+
+    - name: Set fact about rsa_home
+      set_fact:
+        ca_pki_home: "{{ manage_pki_result.result['PKI'] }}"
+
+- name: Copy request to CA server
+  ansible.builtin.copy:
+    src: "{{ fetch_requests }}/{{ certificate_name }}.req"
+    dest: "/tmp/{{ certificate_name }}.req"
+  environment:
+    EASYRSA: "{{ rsa_home }}"
+
+- name: Import request
+  manage_pki:
+    name: "{{ certificate_name }}"
+    request_type: "{{ request_type }}"
+    state: "sign"
+    rsa_home: "{{ rsa_home }}"
+
+- name: Remove temporary request file
+  ansible.builtin.command: "rm /tmp/{{ certificate_name }}.req"
+
+#- name: Sign request
+#  ansible.builtin.command: "$EASYRSA/easyrsa sign-req {{ request_type }} {{ certificate_name }}"
+#  environment:
+#    EASYRSA: "{{ rsa_home }}"
+#    EASYRSA_BATCH: "yes"
+
+- name: Define PKI path
+  block:
+    - name: Call module manage_pki to get information about pki
+      manage_pki:
+        rsa_home: "{{ rsa_home }}"
+        state: info
+      register: manage_pki_result
+
+    - name: Set fact about rsa_home
+      set_fact:
+        pki_home: "{{ manage_pki_result.result['PKI'] }}"
+
+- name: Fetch signed certificate
+  ansible.builtin.fetch:
+    src: "{{ pki_home }}/issued/{{ certificate_name }}.crt"
+    dest: "{{ fetch_certs_path }}/"
+    flat: "yes"

@@ -1,0 +1,5 @@
+---
+- name: main | Install docker
+  package:
+    name:
+      - docker

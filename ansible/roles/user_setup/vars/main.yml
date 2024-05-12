@@ -1,0 +1,6 @@
+---
+username: "sample_user"
+password: "5812"
+create_home: true
+allowed_commands: ALL
+is_sudo: true

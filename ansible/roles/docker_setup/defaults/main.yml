@@ -1,0 +1,2 @@
+---
+docker_setup_python_executable: /usr/bin/python3

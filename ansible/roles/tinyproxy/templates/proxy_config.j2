@@ -1,0 +1,6 @@
+ConnectPort 80
+ConnectPort 443
+LogFile "{{ tinyproxy_logfile }}"
+Port {{ tinyproxy_port }}
+ViaProxyName "tinyproxy"
+Allow 0.0.0.0/0

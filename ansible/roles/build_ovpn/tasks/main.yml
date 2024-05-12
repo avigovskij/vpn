@@ -1,0 +1,6 @@
+---
+- name: main | Build client.ovpn file
+  ansible.builtin.template:
+    src: sample.ovpn
+    dest: "{{ ovpn_target }}"
+    mode: "644"

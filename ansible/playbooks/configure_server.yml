@@ -1,0 +1,59 @@
+---
+- name: Configure server - generate server certificate request
+  become: true
+  hosts: server
+  tasks:
+    - name: Config Server Playbook | easy-rsa isolated installation
+      ansible.builtin.include_role:
+        name: easy_rsa_install
+      vars:
+        easy_rsa_origin_home: /usr/share/easy-rsa/3
+        easy_rsa_target_home: "{{ server_rsa_home }}"
+
+    - name: Config Server Playbook | config CA and fetch CA certificate
+      ansible.builtin.include_role:
+        name: pki_init
+      vars:
+        rsa_home: "{{ server_rsa_home }}"
+
+    - name: Config Server Playbook | Generate sign request
+      ansible.builtin.include_role:
+        name: generate_cert_request
+      vars:
+        node_name: server
+        rsa_home: "{{ server_rsa_home }}"
+
+- name: CA - sign server certificate
+  hosts: ca
+  become: true
+  tasks:
+    - name: CA sign server certificate Playbook | Sign server certificate on CA
+      ansible.builtin.include_role:
+        name: sign_request
+      vars:
+        rsa_home: "{{ ca_rsa_home }}"
+        request_type: server
+        certificate_name: server
+
+- name: Configure OpenVPN server
+  become: true
+  hosts: server
+  tasks:
+    - name: Configure OpenVPN server | Define PKI path
+      block:
+        - name: Configure OpenVPN server | Call module manage_pki to get information about pki
+          manage_pki:
+            rsa_home: "{{ server_rsa_home }}"
+            state: info
+          register: manage_pki_result
+
+        - name: Configure OpenVPN server | Set fact about rsa_home
+          set_fact:
+            server_pki_home: "{{ manage_pki_result.result['PKI'] }}"
+
+    - name: Configure OpenVPN server | Start server on server host
+      ansible.builtin.include_role:
+        name: config_server
+      vars:
+        recreate_dh_file: true
+        server_key_path: "{{ server_pki_home }}/private/server.key"

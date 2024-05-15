@@ -1,0 +1,58 @@
+---
+- name: Client configuration Playbook | Generate client certificate sign request
+  become: false
+  hosts: clients
+  tasks:
+    - name: Config Client Playbook |Cconfig client PKI
+      ansible.builtin.include_role:
+        name: pki_init
+
+    - name: Config Client Playbook | Generate certificate request
+      ansible.builtin.include_role:
+        name: generate_cert_request
+      vars:
+        node_name: "{{ item.node_name }}"
+      with_items: "{{ clients }}"
+
+- name: CA sign client certificate Playbook | Sign client certificate
+  hosts: ca
+  become: true
+  tasks:
+    - name: Config client playbook | Sign client certificate on CA
+      ansible.builtin.include_role:
+        name: sign_request
+      vars:
+        rsa_home: "{{ ca_rsa_home }}"
+        request_path: "/reqs/{{ item }}.req"
+        certificate_name: "{{ item }}"
+        fetch_cert: "{{ certs_path | d('/etc/ssl/certs') }}"
+        request_type: client
+      with_items: "{{ client_node_names }}"
+
+- name: Push CA and server information to client
+  hosts: clients
+  tasks:
+    - name: Push CA certificate to client
+      copy:
+        src: "{{ fetch_certs_path }}/ca.crt"
+        dest: "{{ certs_path }}/ca.crt"
+
+    - name: Push ta key from sever to client
+      copy:
+        src: "{{ fetch_private_files }}/ta.key"
+        dest: "{{ pki_home }}/private/ta.key"
+
+- name: Create OVPN file for clients
+  hosts: clients
+  become: false
+  tasks:
+    - name: Config client playbook | Build .ovpn file
+      ansible.builtin.include_role:
+        name: build_ovpn
+      vars:
+        ca_crt_content: "{{ lookup('ansible.builtin.file', fetch_certs_path + '/ca.crt') }}"
+        client_crt_content: "{{ lookup('ansible.builtin.file', fetch_certs_path + '/' + item.node_name + '.crt') }}"
+        client_key_content: "{{ lookup('ansible.builtin.file', pki_home + '/private/' + item.node_name + '.key') }}"
+        ta_key_content: "{{ lookup('ansible.builtin.file', pki_home + '/private/ta.key') }}"
+        ovpn_target: "{{ item.ovpn_target }}"
+      with_items: "{{ clients }}"

@@ -1,0 +1,14 @@
+---
+- name: Proxy configuration
+  become: true
+  become_user: root
+  hosts: proxy
+
+  tasks:
+    - name: Proxy | Install tinyrpoxy package
+      package:
+        name: tinyproxy
+
+    - name: Proxy | Install, configure and start proxy container
+      ansible.builtin.include_role:
+        name: tinyproxy

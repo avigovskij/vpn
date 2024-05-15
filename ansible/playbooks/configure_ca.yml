@@ -1,0 +1,15 @@
+---
+- name: CA configuration
+  become: true
+  hosts: ca
+  tasks:
+    - name: CA configuration playbook | easy-rsa isolated installation
+      ansible.builtin.include_role:
+        name: easy_rsa_install
+      vars:
+        easy_rsa_origin_home: /usr/share/easy-rsa/3
+        easy_rsa_target_home: "{{ ca_rsa_home }}"
+
+    - name: CA configuration playbook | config CA and fetch CA certificate
+      ansible.builtin.include_role:
+        name: config_ca

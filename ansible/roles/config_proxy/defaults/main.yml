@@ -1,4 +1,0 @@
----
-tinyproxy_container_inner_port: 8888
-tinyproxy_logfile: /var/log/tinyproxy/tinyproxy.log
-tinyproxy_docker_image_tag: config_proxy/sample

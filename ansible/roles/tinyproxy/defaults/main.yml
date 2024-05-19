@@ -1,3 +1,0 @@
----
-tinyproxy_logfile: /var/log/tinyproxy/tinyproxy.log
-tinyproxy_config: /etc/config/tinyproxy.conf

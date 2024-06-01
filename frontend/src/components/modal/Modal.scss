@@ -1,0 +1,49 @@
+.modal {
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.5s;
+
+  &.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  &__content {
+    padding: 20px;
+    border-radius: 10px;
+    background: #fff;
+    height:80%;
+    width: 90%;
+  }
+  &__header {
+    display: flex;
+    justify-content: end;
+    margin-bottom: 20px;
+    & button {
+      background: none;
+      border: none;
+
+      &:hover {
+        cursor: pointer;
+      }
+
+      & img {
+        width: 20px;
+      }
+    }
+  }
+}
+.auth-frame {
+  width: 100%;
+  height: calc(100% - 50px);
+  border: none;
+}

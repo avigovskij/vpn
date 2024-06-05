@@ -4,7 +4,7 @@ import "./messages";
 import "./ovpn_storage_entry";
 
 
-contract OVPNStorageMaster with Deployable {
+contract OVPNStorageMaster with Deployable, Ownable {
 
      // Address of wallet who deployed master smart contract
      owner: Address;
@@ -24,45 +24,36 @@ contract OVPNStorageMaster with Deployable {
      }
 
      // Method that deploys new smart contract
-     receive("ovpn_request") {
+     receive(ovpnAuthority: OVPNFileAuthority) {
          // Current var stores request for .ovpn file as new smart contract
           let ovpnFileRequestEntry: StateInit = initOf OVPNStorageEntry(myAddress(), sender());
           dump("entered ovpn_request");
+
           // Subcontract init transaction
           send(SendParameters{
                to: contractAddress(ovpnFileRequestEntry),
                value: ton("0.1"),
                code: ovpnFileRequestEntry.code,
                data: ovpnFileRequestEntry.data,
-               body: "deploy".asComment();
+               body: OVPNFileAuthority{
+                    owner: sender(),
+                    parent: myAddress(),
+                    validUntil: ovpnAuthority.validUntil,
+                    ovpnId: ovpnAuthority.ovpnId
+               }.toCell()
           });
-          dump("sent deployment transaction");
-          self.createdEntries.set(sender(), contractAddress(ovpnFileRequestEntry));
-          dump("set createdEntry");
     }
 
-     // ONWER ONLY METHODS
-     receive(ovpnFileResponse: ExternalOVPNFile) {
-          // Only owner of smart contract might resolve .ovpn files in network
-          self.requireOwner();
+    receive(ovpnFileSavedNotification: OVPNFileSavedNotification) {
+          let ovpnFileRequestEntry: StateInit = initOf OVPNStorageEntry(myAddress(), ovpnFileSavedNotification.owner);
+          self.createdEntries.set(ovpnFileSavedNotification.owner, contractAddress(ovpnFileRequestEntry));
 
-          // Get address of sub smart contract by parent and owner
-          let subContractAddress: Address = contractAddress(initOf OVPNStorageEntry(myAddress(), ovpnFileResponse.owner));
-
-          // // Send .ovpn file content to ovpn request entry
           send(SendParameters{
-               // Send ovpnFile to contract-holder
-               to: subContractAddress,
+               to: ovpnFileSavedNotification.owner,
                value: ton("0.1"),
-               body: InternalOVPNFile{
-                    content: ovpnFileResponse.content,
-                    owner: ovpnFileResponse.owner
-               }.toCell(),
+               body: ovpnFileSavedNotification.validUntil.toString().asComment()
           });
-
-          // Notify main smart contract that .ovpn file deployed
-          self.reply("Encrypted .ovpn file returned".asComment());
-     }
+    }
 
      // GETTERS
      // Getter that returns address of sub smart contract by owner
@@ -76,5 +67,9 @@ contract OVPNStorageMaster with Deployable {
           else {
                return null;
           }
+     }
+
+     get fun uniqueSalt(): Int {
+          return self.uniqueSalt;
      }
 }

@@ -10,40 +10,37 @@ contract OVPNStorageEntry with Deployable {
     // Wallet address of user who requested .ovpn file
     owner: Address;
 
-    certificatesResolved: Int as uint32;
+    validUntil: Int? as uint32;
 
-    // .ovpn file content
-    ovpnFileContent: String?;
+    ovpnId: String?;
 
+    // Entry creation --------------------------------------------------------------------
     init(parent: Address, owner: Address) {
         dump("Entered init method of OVPNStorageEntry");
         self.parent = parent;
         self.owner = owner;
+        self.validUntil = null;
+        self.ovpnId = null;
         dump("Exited init method of OVPNStorageEntry");
     }
 
-    // Method that may be used to check if smart contract alive
-     receive("deploy") {
-          self.reply("Subsmart contract has deployed with address".asComment());
-     }
-
-    receive(ovpnFileResponse: InternalOVPNFile) {
+    receive(ovpnFileAuthority: OVPNFileAuthority) {
         // Only master smart contract can put .ovpn file content
-        require(sender() == self.parent, "Only parent smart contract can put .ovpn files");
-        dump("got .ovpn file inside sub contract!");
-        self.ovpnFileContent = ovpnFileResponse.content;
-        dump(".ovpn file successfully stored!");
-        self.reply(".ovpn file successfully stored".asComment());
+        require(sender() == self.parent, "Only master wallet cat deploy current contract");
+        self.validUntil = ovpnFileAuthority.validUntil;
+        self.ovpnId = ovpnFileAuthority.ovpnId;
+        self.reply(OVPNFileSavedNotification{owner: self.owner, validUntil: self.validUntil!!}.toCell());
     }
 
+    // Entry creation --------------------------------------------------------------------
+
     // GETTERS
-    get fun ovpnFile(): String? {
-        if (self.ovpnFileContent != null) {
-            return self.ovpnFileContent!!;
-        }
-        else {
-            return null;
-        }
+    get fun ovpnFileId(): String? {
+        return self.ovpnId;
+    }
+
+    get fun validUntil(): Int? {
+        return self.validUntil;
     }
     
     get fun parent(): Address {

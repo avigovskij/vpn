@@ -1,0 +1,42 @@
+---
+ton:
+  # Mnemonic phrase for main wallet of system
+  mnemonics:
+    - cram
+    - wish
+    - unfair
+    - penalty
+    - grace
+    - build
+    - burst
+    - bubble
+    - lecture
+    - demise
+    - fragile
+    - lizard
+    - hedgehog
+    - sock
+    - saddle
+    - erode
+    - bird
+    - evoke
+    - diamond
+    - blush
+    - latin
+    - number
+    - party
+    - then
+  rpcURL: "https://testnet.toncenter.com/api/v2/jsonRPC"
+  apiKey: "c1be5910b0dd3adf77f8cc7ecbcd2f06e29c1754d6449b7285f0fb8c8d924916"
+  # TonConnect manifest URL. More about manifests: https://docs.ton.org/develop/dapps/ton-connect/manifest
+  connectManifest: 'https://raw.githubusercontent.com/XaBbl4/pytonconnect/main/pytonconnect-manifest.json'
+ansible:
+  # Path to ansible configuration file
+  ansibleCFG: /Users/vigovskij/projects/infra/vpn/ansible/ansible.cfg
+  # Path to ansible executable files
+  executable: /Users/vigovskij/projects/infra/vpn/venv/bin/ansible-playbook
+  # Path to inventory file with hosts and host vars
+  clientPlaybookInventoryPath: '/Users/vigovskij/projects/infra/vpn/ansible/.parameters/inventory.yml'
+  clientPlaybookPath: '/Users/vigovskij/projects/infra/vpn/ansible/playbooks/configure_client.yml'
+  clientPlaybookOVPNTargetPath: '/tmp/'
+  workingDirectoryPath: '/Users/vigovskij/projects/infra/vpn/ansible'

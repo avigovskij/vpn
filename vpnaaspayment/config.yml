@@ -1,0 +1,15 @@
+---
+mnemonics:
+
+ton_connect_manifest: 'https://raw.githubusercontent.com/XaBbl4/pytonconnect/main/pytonconnect-manifest.json'
+inventory_path: '/Users/vigovskij/projects/infra/vpn/ansible/.parameters/inventory.yml'
+inventory_client_vars:
+  hosts:
+    localhost:
+      ansible_connection: local
+      rsa_home: /opt/homebrew/bin/
+inventory_ca_vars:
+  hosts:
+    185.234.67.19:
+      ansible_user: avigovskij
+      ca_rsa_home: /infrahub_pki
